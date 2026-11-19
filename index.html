@@ -24,7 +24,6 @@
             padding: 0;
             line-height: 1.5;
         }
-        /* Üst Başlık */
         header {
             background-color: var(--accent);
             color: #ffffff;
@@ -42,14 +41,13 @@
             font-size: 0.95rem;
             color: #cbd7f0;
         }
-        /* Sekme Menüsü */
         .nav-bar {
             background: var(--card-bg);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: center;
-            gap: 10px;
-            padding: 0 15px;
+            gap: 8px;
+            padding: 0 10px;
             position: sticky;
             top: 0;
             z-index: 50;
@@ -58,7 +56,7 @@
         .nav-btn {
             background: none;
             border: none;
-            padding: 14px 20px;
+            padding: 14px 18px;
             font-size: 0.95rem;
             font-weight: 600;
             color: var(--text-muted);
@@ -79,7 +77,6 @@
         .tab-section { display: none; }
         .tab-section.active { display: block; }
 
-        /* Kontrol ve Filtre Çubuğu */
         .controls-bar {
             background: var(--card-bg);
             padding: 14px 18px;
@@ -121,8 +118,6 @@
             background: #fff;
             color: var(--text-main);
         }
-
-        /* Kart Izgara Düzenleri */
         .feed-grid {
             display: grid;
             gap: 16px;
@@ -131,14 +126,9 @@
         .feed-grid.double {
             grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
         }
-        .feed-grid.compact .quote-card {
-            padding: 14px 18px;
-        }
-        .feed-grid.compact .quote-note {
-            display: none;
-        }
+        .feed-grid.compact .quote-card { padding: 14px 18px; }
+        .feed-grid.compact .quote-note { display: none; }
 
-        /* Overheard Kartı */
         .quote-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -148,11 +138,6 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: transform 0.15s;
-        }
-        .quote-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(6, 41, 112, 0.08);
         }
         .card-top {
             display: flex;
@@ -172,7 +157,6 @@
             font-size: 1.08rem;
             font-weight: 500;
             margin: 0 0 10px 0;
-            color: var(--text-main);
         }
         .quote-note {
             font-size: 0.88rem;
@@ -213,8 +197,6 @@
             border-color: #ef4444;
             color: #dc2626;
         }
-
-        /* Form ve Bilgi Kutusu */
         .box-panel {
             background: var(--card-bg);
             padding: 28px;
@@ -279,25 +261,23 @@
 </header>
 
 <nav class="nav-bar">
-    <button class="nav-btn active" onclick="switchTab(event, 'tab-oku')">📖 Duyulanları Oku</button>
-    <button class="nav-btn" onclick="switchTab(event, 'tab-yaz')">✍️ Bugün Neler Duydun?</button>
-    <button class="nav-btn" onclick="switchTab(event, 'tab-nedir')">❓ Overheard Nedir?</button>
+    <button type="button" class="nav-btn active" data-target="tab-oku">📖 Duyulanları Oku</button>
+    <button type="button" class="nav-btn" data-target="tab-yaz">✍️ Bugün Neler Duydun?</button>
+    <button type="button" class="nav-btn" data-target="tab-nedir">❓ Overheard Nedir?</button>
 </nav>
 
 <div class="container">
 
-    <!-- 1. SEKME: DUYULANLARI OKU -->
     <div id="tab-oku" class="tab-section active">
-        
         <div class="controls-bar">
             <div class="view-modes">
                 <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Görünüm:</span>
-                <button class="chip-btn active" onclick="setLayout('single', this)">Tekli</button>
-                <button class="chip-btn" onclick="setLayout('double', this)">İkili</button>
-                <button class="chip-btn" onclick="setLayout('compact', this)">Kompakt</button>
+                <button type="button" class="chip-btn active" data-mode="single">Tekli</button>
+                <button type="button" class="chip-btn" data-mode="double">İkili</button>
+                <button type="button" class="chip-btn" data-mode="compact">Kompakt</button>
             </div>
             <div class="filters">
-                <select id="sortSelect" onchange="sortCards()">
+                <select id="sortSelect">
                     <option value="newest">En Yeni</option>
                     <option value="oldest">En Eski</option>
                     <option value="likes">En Çok Beğeni ❤</option>
@@ -306,12 +286,25 @@
         </div>
 
         <div id="feedGrid" class="feed-grid">
-            
-            <!-- Kart 1 -->
             <div class="quote-card" data-date="2026-11-19" data-likes="24">
                 <div>
                     <div class="card-top">
                         <span class="badge-loc">📍 Kantin</span>
                         <span>19 Kasım 2026 • Öğle Arası</span>
                     </div>
-                    <p class="quote-text">"Sınavdan 90 bekliyorum dedim ama kağıda sadece adımı doğru yazdığımdan eminim."</p
+                    <p class="quote-text">"Sınavdan 90 bekliyorum dedim ama kağıda sadece adımı doğru yazdığımdan eminim."</p>
+                    <div class="quote-note">Açıklama: Matematik sınavı çıkışında iki 11. sınıf öğrencisi arasında geçti.</div>
+                </div>
+                <div class="card-bottom">
+                    <span>👤 Anonim</span>
+                    <div class="stats">
+                        <span>👁 142</span>
+                        <button type="button" class="like-btn">❤ <span>24</span></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quote-card" data-date="2026-11-18" data-likes="41">
+                <div>
+                    <div class="card-top">
+                        <span class="badge-loc">📍 2. Kat Koridor</span>
