@@ -46,6 +46,7 @@
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: center;
+            flex-wrap: wrap;
             gap: 8px;
             padding: 0 10px;
             position: sticky;
@@ -252,59 +253,59 @@
             .row-2 { grid-template-columns: 1fr; }
         }
     </style>
-</head>
-<body>
+    <script>
+        function sekmeAc(sekmeId, tiklananButon) {
+            var sekmeler = document.getElementsByClassName("tab-section");
+            for (var i = 0; i < sekmeler.length; i++) {
+                sekmeler[i].style.display = "none";
+                sekmeler[i].classList.remove("active");
+            }
+            var butonlar = document.getElementsByClassName("nav-btn");
+            for (var j = 0; j < butonlar.length; j++) {
+                butonlar[j].classList.remove("active");
+            }
+            var seciliSekme = document.getElementById(sekmeId);
+            seciliSekme.style.display = "block";
+            seciliSekme.classList.add("active");
+            tiklananButon.classList.add("active");
+        }
 
-<header>
-    <h1>MKAL OVERHEARD</h1>
-    <p>Okulda kulak misafiri olduğumuz komik, garip ve bağlamdan kopuk anlar</p>
-</header>
+        function gorunumDegistir(mod, tiklananChip) {
+            var grid = document.getElementById("feedGrid");
+            grid.className = "feed-grid";
+            if (mod === "double") grid.classList.add("double");
+            if (mod === "compact") grid.classList.add("compact");
 
-<nav class="nav-bar">
-    <button type="button" class="nav-btn active" data-target="tab-oku"> Overheardler</button>
-    <button type="button" class="nav-btn" data-target="tab-yaz">✍️ Kendi Overheardini yaz!</button>
-    <button type="button" class="nav-btn" data-target="tab-nedir">❓ Overheard Nedir?</button>
-</nav>
+            var chipler = document.getElementsByClassName("chip-btn");
+            for (var i = 0; i < chipler.length; i++) {
+                chipler[i].classList.remove("active");
+            }
+            tiklananChip.classList.add("active");
+        }
 
-<div class="container">
+        function begeniDegistir(buton) {
+            var sayiAlani = buton.getElementsByTagName("span")[0];
+            var sayi = parseInt(sayiAlani.innerText);
+            if (buton.classList.contains("liked")) {
+                buton.classList.remove("liked");
+                sayiAlani.innerText = sayi - 1;
+            } else {
+                buton.classList.add("liked");
+                sayiAlani.innerText = sayi + 1;
+            }
+        }
 
-    <div id="tab-oku" class="tab-section active">
-        <div class="controls-bar">
-            <div class="view-modes">
-                <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Görünüm:</span>
-                <button type="button" class="chip-btn active" data-mode="single">Tekli</button>
-                <button type="button" class="chip-btn" data-mode="double">İkili</button>
-                <button type="button" class="chip-btn" data-mode="compact">Kompakt</button>
-            </div>
-            <div class="filters">
-                <select id="sortSelect">
-                    <option value="newest">En Yeni</option>
-                    <option value="oldest">En Eski</option>
-                    <option value="likes">En Çok Beğeni ❤</option>
-                </select>
-            </div>
-        </div>
+        function kartlariSirala() {
+            var grid = document.getElementById("feedGrid");
+            var kartlar = Array.prototype.slice.call(grid.children);
+            var mod = document.getElementById("sortSelect").value;
 
-        <div id="feedGrid" class="feed-grid">
-            <div class="quote-card" data-date="2026-11-19" data-likes="24">
-                <div>
-                    <div class="card-top">
-                        <span class="badge-loc">📍 Kantin</span>
-                        <span>19 Kasım 2026 • Öğle Arası</span>
-                    </div>
-                    <p class="quote-text">"Sınavdan 90 bekliyorum dedim ama kağıda sadece adımı doğru yazdığımdan eminim."</p>
-                    <div class="quote-note">Açıklama: Matematik sınavı çıkışında iki 11. sınıf öğrencisi arasında geçti.</div>
-                </div>
-                <div class="card-bottom">
-                    <span>👤 Anonim</span>
-                    <div class="stats">
-                        <span>👁 142</span>
-                        <button type="button" class="like-btn">❤ <span>24</span></button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="quote-card" data-date="2026-11-18" data-likes="41">
-                <div>
-                    <div class="card-top">
-                        <span class="badge-loc">📍 2. Kat Koridor</span>
+            kartlar.sort(function(a, b) {
+                if (mod === "likes") {
+                    return parseInt(b.getAttribute("data-likes")) - parseInt(a.getAttribute("data-likes"));
+                } else if (mod === "oldest") {
+                    return a.getAttribute("data-date").localeCompare(b.getAttribute("data-date"));
+                } else {
+                    return b.getAttribute("data-date").localeCompare(a.getAttribute("data-date"));
+                }
+            });
