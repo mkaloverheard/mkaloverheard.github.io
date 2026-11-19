@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kulak Misafiri | Çevrede Duyulanlar</title>
+    <title>MKAL Overheard</title>
     <style>
         :root {
-            --bg-color: #f8f9fa;
+            --bg-color: #f4f6fa;
             --card-bg: #ffffff;
             --text-main: #1a1a1a;
             --text-muted: #6c757d;
-            --accent: #ff5722;
-            --accent-hover: #e64a19;
+            --accent: #062970;
+            --accent-hover: #041d52;
+            --accent-light: #e8eef9;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -22,61 +23,107 @@
             line-height: 1.6;
         }
         header {
-            background-color: var(--text-main);
+            background-color: var(--accent);
             color: #ffffff;
             text-align: center;
-            padding: 50px 20px;
+            padding: 45px 20px 30px;
         }
         header h1 {
             margin: 0;
-            font-size: 2.5rem;
-            letter-spacing: -1px;
+            font-size: 2.4rem;
+            letter-spacing: -0.5px;
         }
         header p {
-            color: #cccccc;
+            color: #d0dcf2;
             max-width: 600px;
-            margin: 15px auto 0;
-            font-size: 1.1rem;
+            margin: 10px auto 0;
+            font-size: 1.05rem;
+        }
+        /* Sekme (Tab) Menüsü */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 16px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            width: auto;
+            border-radius: 0;
+        }
+        .tab-btn:hover {
+            color: var(--accent);
+            background-color: var(--accent-light);
+        }
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom: 3px solid var(--accent);
         }
         .container {
             max-width: 750px;
-            margin: 40px auto;
+            margin: 35px auto;
             padding: 0 20px;
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         /* Gönderim Formu Alanı */
         .submit-box {
             background: var(--card-bg);
-            padding: 25px;
+            padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 40px;
+            box-shadow: 0 4px 12px rgba(6, 41, 112, 0.08);
             border-top: 4px solid var(--accent);
         }
         .submit-box h2 {
             margin-top: 0;
-            font-size: 1.3rem;
+            color: var(--accent);
+            font-size: 1.4rem;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
         input, textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #ccd4e0;
             border-radius: 8px;
             font-size: 1rem;
             box-sizing: border-box;
             font-family: inherit;
         }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
         textarea {
             resize: vertical;
-            height: 90px;
+            height: 110px;
         }
-        button {
+        .submit-btn {
             background-color: var(--accent);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 14px 24px;
             font-size: 1rem;
             font-weight: bold;
             border-radius: 8px;
@@ -84,23 +131,17 @@
             transition: background 0.2s;
             width: 100%;
         }
-        button:hover {
+        .submit-btn:hover {
             background-color: var(--accent-hover);
         }
-        /* Duyulanlar Akışı */
-        .feed-title {
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
-            padding-bottom: 10px;
-        }
+        /* Duyulanlar Kartları */
         .quote-card {
             background: var(--card-bg);
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            margin-bottom: 20px;
-            position: relative;
+            margin-bottom: 18px;
+            border-left: 4px solid var(--accent);
         }
         .quote-text {
             font-size: 1.15rem;
@@ -110,13 +151,14 @@
         .quote-meta {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-size: 0.9rem;
             color: var(--text-muted);
         }
         .location-tag {
-            background: #ffeae3;
+            background: var(--accent-light);
             color: var(--accent);
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
             font-weight: 600;
         }
@@ -131,66 +173,94 @@
 <body>
 
 <header>
-    <h1>👂 Kulak Misafiri</h1>
-    <p>Sokakta, vapurda, kafede ya da kampüste istemeden duyduğumuz o absürt, komik veya düşündürücü diyaloglar.</p>
+    <h1>MKAL Overheard</h1>
+    <p>Koridorda, bahçede, kantinde veya sınıfta kulak misafiri olduğumuz en unutulmaz anlar.</p>
 </header>
+
+<!-- SEKME BUTONLARI -->
+<nav class="tabs">
+    <button class="tab-btn active" onclick="openTab(event, 'oku')">📖 Duyulanları Oku</button>
+    <button class="tab-btn" onclick="openTab(event, 'yaz')">✍️ Yeni Overheard Yaz</button>
+</nav>
 
 <div class="container">
 
-    <!-- YENİ DİYALOG GÖNDERME ALANI -->
-    <div class="submit-box">
-        <h2>Sen Ne Duydun?</h2>
-        <p style="font-size: 0.9rem; color: #666; margin-top: -10px;">Duyduğun diyaloğu ve nerede geçtiğini yaz, onaylandıktan sonra sayfada yayınlansın!</p>
+    <!-- 1. SEKME: DUYULANLARI OKUMA ALANI -->
+    <div id="oku" class="tab-content active">
         
-        <!-- NOT: Formun çalışması için aşağıdaki e-posta adresini kendi adresinizle değiştirin -->
-        <form action="https://formsubmit.co" method="POST">
-            <div class="form-group">
-                <input type="text" name="konum" placeholder="Nerede duyuldu? (Örn: Kadıköy Vapuru, Kütüphane, Kafe...)" required>
+        <!-- Örnek Kart 1 -->
+        <div class="quote-card">
+            <p class="quote-text">"Sınavdan 90 bekliyorum dedim ama kağıda sadece adımı doğru yazdığımdan eminim."</p>
+            <div class="quote-meta">
+                <span class="location-tag">📍 Kantin</span>
+                <span>19 Kasım 2026</span>
             </div>
-            <div class="form-group">
-                <textarea name="diyalog" placeholder="Duyduğun cümleyi veya diyaloğu buraya yaz..." required></textarea>
+        </div>
+
+        <!-- Örnek Kart 2 -->
+        <div class="quote-card">
+            <p class="quote-text">— Ders zili çaldı mı?<br>— Ruhum hala teneffüste ama bedenim sınıfa giriyor.</p>
+            <div class="quote-meta">
+                <span class="location-tag">📍 2. Kat Koridor</span>
+                <span>18 Kasım 2026</span>
             </div>
-            <input type="hidden" name="_subject" value="Yeni Overheard Gönderisi!">
-            <input type="hidden" name="_captcha" value="false">
-            <button type="submit">Gönder Gelsin 🚀</button>
-        </form>
-    </div>
-
-    <!-- PAYLAŞILAN DİYALOGLAR LİSTESİ -->
-    <h3 class="feed-title">Son Duyulanlar</h3>
-
-    <!-- Örnek Kart 1 -->
-    <div class="quote-card">
-        <p class="quote-text">"Abi ben aslında yazılım öğrenecektim ama bilgisayarın şarj aletini bulamayınca hayatımı sorgulamaya başladım."</p>
-        <div class="quote-meta">
-            <span class="location-tag">📍 Kampüs Kafe</span>
-            <span>19 Kasım 2026</span>
         </div>
-    </div>
 
-    <!-- Örnek Kart 2 -->
-    <div class="quote-card">
-        <p class="quote-text">— Sence bu otobüs sahilden mi gider?<br>— Kaptan biraz duygusalsa kesin sahilden gider.</p>
-        <div class="quote-meta">
-            <span class="location-tag">📍 Otobüs Durağı</span>
-            <span>18 Kasım 2026</span>
+        <!-- Örnek Kart 3 -->
+        <div class="quote-card">
+            <p class="quote-text">"Bugün kesin erken uyuyacağım deyip saat 02.00'de okul anılarını düşünmeye başladım."</p>
+            <div class="quote-meta">
+                <span class="location-tag">📍 Okul Bahçesi</span>
+                <span>17 Kasım 2026</span>
+            </div>
         </div>
+
     </div>
 
-    <!-- Örnek Kart 3 -->
-    <div class="quote-card">
-        <p class="quote-text">"Diyetteyim ama bu baklava bana çok masum baktı, kıramadım."</p>
-        <div class="quote-meta">
-            <span class="location-tag">📍 Pastane Önü</span>
-            <span>17 Kasım 2026</span>
+    <!-- 2. SEKME: YENİ OVERHEARD OLUŞTURMA ALANI -->
+    <div id="yaz" class="tab-content">
+        <div class="submit-box">
+            <h2>Yeni Overheard Gönder</h2>
+            <p style="font-size: 0.95rem; color: #555; margin-top: -8px; margin-bottom: 20px;">
+                Okulda duyduğun komik veya ilginç bir diyaloğu bizimle paylaş. Onaylandıktan sonra ana akışta yayınlanacak!
+            </p>
+            
+            <!-- NOT: Formun çalışması için aşağıdaki e-posta adresini kendi adresinizle değiştirin -->
+            <form action="https://formsubmit.co" method="POST">
+                <div class="form-group">
+                    <input type="text" name="konum" placeholder="Nerede duyuldu? (Örn: Kantin, Bahçe, Kütüphane...)" required>
+                </div>
+                <div class="form-group">
+                    <textarea name="diyalog" placeholder="Duyduğun cümleyi veya diyaloğu buraya yaz..." required></textarea>
+                </div>
+                <input type="hidden" name="_subject" value="Yeni MKAL Overheard Gönderisi!">
+                <input type="hidden" name="_captcha" value="false">
+                <button type="submit" class="submit-btn">Gönder Gelsin 🚀</button>
+            </form>
         </div>
     </div>
 
 </div>
 
 <footer>
-    <p>© 2026 Kulak Misafiri | Tüm diyaloglar anonim olarak paylaşılmaktadır.</p>
+    <p>© 2026 MKAL Overheard | Tüm paylaşımlar anonimdir.</p>
 </footer>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+</script>
 
 </body>
 </html>
