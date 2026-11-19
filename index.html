@@ -1,152 +1,141 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MKAL Overheard</title>
-    <style>
-        :root {
-            --bg: #f0f3f8; --card: #ffffff; --text: #1a1f2c; --muted: #64748b;
-            --accent: #062970; --hover: #041c4d; --light: #e6ecf8; --border: #dce3f0;
-        }
-        * { box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; line-height: 1.5; }
-        header { background: var(--accent); color: #fff; padding: 25px 20px; text-align: center; }
-        header h1 { margin: 0; font-size: 1.9rem; font-weight: 800; }
-        header p { margin: 6px 0 0; font-size: 0.95rem; color: #cbd7f0; }
-        .nav-bar { background: var(--card); border-bottom: 1px solid var(--border); display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; position: sticky; top: 0; z-index: 50; }
-        .nav-btn { background: none; border: none; padding: 14px 18px; font-size: 0.95rem; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; }
-        .nav-btn.active, .nav-btn:hover { color: var(--accent); }
-        .nav-btn.active { border-bottom-color: var(--accent); }
-        .container { max-width: 960px; margin: 25px auto; padding: 0 16px; }
-        .tab-section { display: none; }
-        .tab-section.active { display: block; }
-        .controls-bar { background: var(--card); padding: 14px 18px; border-radius: 10px; border: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .view-modes { display: flex; gap: 8px; align-items: center; }
-        .chip-btn { background: var(--bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-        .chip-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-        select { padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.85rem; }
-        .feed-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
-        .feed-grid.double { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
-        .feed-grid.compact .quote-card { padding: 14px 18px; }
-        .feed-grid.compact .quote-note { display: none; }
-        .quote-card { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
-        .card-top { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); margin-bottom: 10px; }
-        .badge-loc { background: var(--light); color: var(--accent); padding: 3px 10px; border-radius: 20px; font-weight: 700; }
-        .quote-text { font-size: 1.08rem; font-weight: 500; margin: 0 0 10px 0; }
-        .quote-note { font-size: 0.88rem; color: var(--muted); background: #f8fafc; padding: 8px 12px; border-radius: 6px; margin-bottom: 14px; }
-        .card-bottom { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 10px; font-size: 0.85rem; color: var(--muted); }
-        .stats { display: flex; gap: 14px; align-items: center; }
-        .like-btn { background: none; border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; }
-        .like-btn.liked { background: #fee2e2; border-color: #ef4444; color: #dc2626; }
-        .box-panel { background: var(--card); padding: 28px; border-radius: 12px; border: 1px solid var(--border); border-top: 4px solid var(--accent); max-width: 650px; margin: 0 auto; }
-        .box-panel h2 { margin-top: 0; color: var(--accent); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 5px; }
-        input, textarea { width: 100%; padding: 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; font-family: inherit; }
-        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .submit-btn { background: var(--accent); color: #fff; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        .submit-btn:hover { background: var(--hover); }
-        @media (max-width: 600px) { .feed-grid.double, .row-2 { grid-template-columns: 1fr; } }
-    </style>
-    <script>
-        function sekmeAc(id, btn) {
-            document.querySelectorAll(".tab-section").forEach(s => { s.style.display = "none"; s.classList.remove("active"); });
-            document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
-            var secili = document.getElementById(id);
-            secili.style.display = "block";
-            secili.classList.add("active");
-            btn.classList.add("active");
-        }
-        function gorunumDegistir(mod, chip) {
-            var grid = document.getElementById("feedGrid");
-            grid.className = "feed-grid" + (mod !== "single" ? " " + mod : "");
-            document.querySelectorAll(".chip-btn").forEach(c => c.classList.remove("active"));
-            chip.classList.add("active");
-        }
-        function begeniDegistir(btn) {
-            var span = btn.querySelector("span");
-            var sayi = parseInt(span.innerText);
-            btn.classList.toggle("liked");
-            span.innerText = btn.classList.contains("liked") ? sayi + 1 : sayi - 1;
-        }
-        function kartlariSirala() {
-            var grid = document.getElementById("feedGrid");
-            var kartlar = Array.from(grid.children);
-            var mod = document.getElementById("sortSelect").value;
-            kartlar.sort((a, b) => {
-                if (mod === "likes") return b.dataset.likes - a.dataset.likes;
-                if (mod === "oldest") return a.dataset.date.localeCompare(b.dataset.date);
-                return b.dataset.date.localeCompare(a.dataset.date);
-            });
-            kartlar.forEach(k => grid.appendChild(k));
-        }
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKAL Overheard</title>
+<style>
+:root{--bg:#f0f3f8;--card:#fff;--text:#1a1f2c;--muted:#64748b;--accent:#062970;--hover:#041c4d;--light:#e6ecf8;--border:#dce3f0}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);margin:0;line-height:1.5}
+header{background:var(--accent);color:#fff;padding:24px 16px;text-align:center}
+header h1{margin:0;font-size:1.8rem;font-weight:800}
+header p{margin:6px 0 0;font-size:.95rem;color:#cbd7f0}
+.nav-bar{background:var(--card);border-bottom:1px solid var(--border);display:flex;justify-content:center;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:50}
+.nav-btn{background:none;border:none;padding:14px 16px;font-size:.95rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent}
+.nav-btn.active,.nav-btn:hover{color:var(--accent)}
+.nav-btn.active{border-bottom-color:var(--accent)}
+.container{max-width:900px;margin:24px auto;padding:0 16px}
+.tab-section{display:none}
+.tab-section.active{display:block}
+.controls-bar{background:var(--card);padding:12px 16px;border-radius:10px;border:1px solid var(--border);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:18px}
+.chip-btn{background:var(--bg);border:1px solid var(--border);padding:6px 12px;border-radius:6px;font-size:.85rem;font-weight:600;cursor:pointer}
+.chip-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+select{padding:6px 10px;border-radius:6px;border:1px solid var(--border);font-size:.85rem}
+.feed-grid{display:grid;gap:16px;grid-template-columns:1fr}
+.feed-grid.double{grid-template-columns:repeat(auto-fill,minmax(380px,1fr))}
+.feed-grid.compact .quote-card{padding:14px}
+.feed-grid.compact .quote-note{display:none}
+.quote-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:10px;padding:18px}
+.card-top{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted);margin-bottom:10px}
+.badge-loc{background:var(--light);color:var(--accent);padding:3px 10px;border-radius:20px;font-weight:700}
+.quote-text{font-size:1.05rem;font-weight:500;margin:0 0 10px}
+.quote-note{font-size:.88rem;color:var(--muted);background:#f8fafc;padding:8px 12px;border-radius:6px;margin-bottom:12px}
+.card-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1f5f9;padding-top:10px;font-size:.85rem;color:var(--muted)}
+.like-btn{background:none;border:1px solid var(--border);padding:4px 10px;border-radius:20px;cursor:pointer;font-size:.85rem}
+.like-btn.liked{background:#fee2e2;border-color:#ef4444;color:#dc2626}
+.box-panel{background:var(--card);padding:24px;border-radius:12px;border:1px solid var(--border);border-top:4px solid var(--accent);max-width:650px;margin:0 auto}
+.box-panel h2{margin-top:0;color:var(--accent)}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.88rem;font-weight:600;margin-bottom:5px}
+input,textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:.95rem;font-family:inherit}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.submit-btn{background:var(--accent);color:#fff;border:none;padding:14px;width:100%;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:8px}
+.submit-btn:hover{background:var(--hover)}
+@media(max-width:600px){.feed-grid.double,.row-2{grid-template-columns:1fr}}
+</style>
+<script>
+function sekmeAc(id,btn){
+document.querySelectorAll(".tab-section").forEach(s=>{s.style.display="none";s.classList.remove("active")});
+document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+var s=document.getElementById(id);s.style.display="block";s.classList.add("active");btn.classList.add("active");
+}
+function gorunumDegistir(mod,chip){
+var g=document.getElementById("feedGrid");g.className="feed-grid"+(mod!=="single"?" "+mod:"");
+document.querySelectorAll(".chip-btn").forEach(c=>c.classList.remove("active"));chip.classList.add("active");
+}
+function begeniDegistir(btn){
+var sp=btn.querySelector("span"),n=parseInt(sp.innerText);btn.classList.toggle("liked");sp.innerText=btn.classList.contains("liked")?n+1:n-1;
+}
+function kartlariSirala(){
+var g=document.getElementById("feedGrid"),k=Array.from(g.children),m=document.getElementById("sortSelect").value;
+k.sort((a,b)=>m==="likes"?b.dataset.likes-a.dataset.likes:m==="oldest"?a.dataset.date.localeCompare(b.dataset.date):b.dataset.date.localeCompare(a.dataset.date));
+k.forEach(x=>g.appendChild(x));
+}
+</script>
 </head>
 <body>
-
 <header>
-    <h1>MKAL OVERHEARD</h1>
-    <p>Okulda kulak misafiri olduğumuz komik, garip ve bağlamdan kopuk anlar</p>
+<h1>MKAL OVERHEARD</h1>
+<p>Okulda kulak misafiri olduğumuz komik, garip ve bağlamdan kopuk anlar</p>
 </header>
-
 <nav class="nav-bar">
-    <button type="button" class="nav-btn active" onclick="sekmeAc('tab-oku', this)">Overheardler</button>
-    <button type="button" class="nav-btn" onclick="sekmeAc('tab-yaz', this)">✍ Kendi Overheardini yaz!</button>
-    <button type="button" class="nav-btn" onclick="sekmeAc('tab-nedir', this)">❓ Overheard Nedir?</button>
+<button type="button" class="nav-btn active" onclick="sekmeAc('tab-oku',this)">Overheardler</button>
+<button type="button" class="nav-btn" onclick="sekmeAc('tab-yaz',this)">✍ Kendi Overheardini yaz!</button>
+<button type="button" class="nav-btn" onclick="sekmeAc('tab-nedir',this)">❓ Overheard Nedir?</button>
 </nav>
-
 <div class="container">
-    <!-- 1. SEKME: DUYUMLAR -->
-    <div id="tab-oku" class="tab-section active">
-        <div class="controls-bar">
-            <div class="view-modes">
-                <span style="font-size:0.85rem; font-weight:600; color:var(--muted);">Görünüm:</span>
-                <button type="button" class="chip-btn active" onclick="gorunumDegistir('single', this)">Tekli</button>
-                <button type="button" class="chip-btn" onclick="gorunumDegistir('double', this)">İkili</button>
-                <button type="button" class="chip-btn" onclick="gorunumDegistir('compact', this)">Kompakt</button>
-            </div>
-            <select id="sortSelect" onchange="kartlariSirala()">
-                <option value="newest">En Yeni</option>
-                <option value="oldest">En Eski</option>
-                <option value="likes">En Çok Beğeni ❤</option>
-            </select>
-        </div>
-
-        <div id="feedGrid" class="feed-grid">
-            <div class="quote-card" data-date="2026-11-19" data-likes="24">
-                <div>
-                    <div class="card-top"><span class="badge-loc">📍 Kantin • 👥 2 Kişi</span><span>19 Kasım 2026 • Öğle Arası</span></div>
-                    <p class="quote-text">"Sınavdan 90 bekliyorum dedim ama kağıda sadece adımı doğru yazdığımdan eminim."</p>
-                    <div class="quote-note">Açıklama: Matematik sınavı çıkışında iki 11. sınıf öğrencisi arasında geçti.</div>
-                </div>
-                <div class="card-bottom">
-                    <span>👤 Anonim</span>
-                    <div class="stats"><span>👁 142</span><button type="button" class="like-btn" onclick="begeniDegistir(this)">❤ <span>24</span></button></div>
-                </div>
-            </div>
-
-            <div class="quote-card" data-date="2026-11-18" data-likes="41">
-                <div>
-                    <div class="card-top"><span class="badge-loc">📍 2. Kat Koridor • 👥 3 Kişi</span><span>18 Kasım 2026 • Teneffüs</span></div>
-                    <p class="quote-text">— Ders zili çaldı mı?<br>— Ruhum hala teneffüste ama bedenim sınıfa giriyor.</p>
-                </div>
-                <div class="card-bottom">
-                    <span>👤 UykusuzÖğrenci</span>
-                    <div class="stats"><span>👁 215</span><button type="button" class="like-btn" onclick="begeniDegistir(this)">❤ <span>41</span></button></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. SEKME: FORM -->
-    <div id="tab-yaz" class="tab-section">
-        <div class="box-panel">
-            <h2>Bugün Neler Duydun?</h2>
-            <p style="color:var(--muted); font-size:0.92rem; margin-top:-8px;">Gönderdiğin duyum yönetici onayından geçtikten sonra ana akışta yayınlanır.</p>
-            <form action="https://formsubmit.co" method="POST">
-                <div class="form-group">
-                    <label>Duyum *</label>
-                    <textarea name="duyum" rows="4" placeholder="Duyduğun cümleyi veya diyaloğu buraya yaz..." required></textarea>
-                </div>
-                <div class="row-2">
+<div id="tab-oku" class="tab-section active">
+<div class="controls-bar">
+<div>
+<span style="font-size:.85rem;font-weight:600;color:var(--muted)">Görünüm: </span>
+<button type="button" class="chip-btn active" onclick="gorunumDegistir('single',this)">Tekli</button>
+<button type="button" class="chip-btn" onclick="gorunumDegistir('double',this)">İkili</button>
+<button type="button" class="chip-btn" onclick="gorunumDegistir('compact',this)">Kompakt</button>
+</div>
+<select id="sortSelect" onchange="kartlariSirala()">
+<option value="newest">En Yeni</option>
+<option value="oldest">En Eski</option>
+<option value="likes">En Çok Beğeni ❤</option>
+</select>
+</div>
+<div id="feedGrid" class="feed-grid">
+<div class="quote-card" data-date="2026-11-19" data-likes="24">
+<div class="card-top"><span class="badge-loc">📍 Kantin • 👥 2 Kişi</span><span>19 Kasım 2026 • Öğle Arası</span></div>
+<p class="quote-text">"Sınavdan 90 bekliyorum dedim ama kağıda sadece adımı doğru yazdığımdan eminim."</p>
+<div class="quote-note">Açıklama: Matematik sınavı çıkışında iki 11. sınıf öğrencisi arasında geçti.</div>
+<div class="card-bottom"><span>👤 Anonim</span><div><span>👁 142 </span><button type="button" class="like-btn" onclick="begeniDegistir(this)">❤ <span>24</span></button></div></div>
+</div>
+<div class="quote-card" data-date="2026-11-18" data-likes="41">
+<div class="card-top"><span class="badge-loc">📍 2. Kat Koridor • 👥 3 Kişi</span><span>18 Kasım 2026 • Teneffüs</span></div>
+<p class="quote-text">— Ders zili çaldı mı?<br>— Ruhum hala teneffüste ama bedenim sınıfa giriyor.</p>
+<div class="card-bottom"><span>👤 UykusuzÖğrenci</span><div><span>👁 215 </span><button type="button" class="like-btn" onclick="begeniDegistir(this)">❤ <span>41</span></button></div></div>
+</div>
+</div>
+</div>
+<div id="tab-yaz" class="tab-section">
+<div class="box-panel">
+<h2>Bugün Neler Duydun?</h2>
+<p style="color:var(--muted);font-size:.92rem;margin-top:-8px">Gönderdiğin duyum yönetici onayından geçtikten sonra ana akışta yayınlanır.</p>
+<form action="https://formsubmit.co" method="POST">
+<div class="form-group"><label>Duyum *</label><textarea name="duyum" rows="4" placeholder="Duyduğun cümleyi veya diyaloğu buraya yaz..." required></textarea></div>
+<div class="row-2">
+<div class="form-group"><label>Konum *</label><input type="text" name="konum" placeholder="Örn: Kantin, Bahçe, Koridor" required></div>
+<div class="form-group"><label>Kişi Sayısı *</label><input type="text" name="kisi_sayisi" placeholder="Örn: 2 kişi, 1 kişi" required></div>
+</div>
+<div class="row-2">
+<div class="form-group"><label>Zaman *</label><input type="text" name="zaman" placeholder="Örn: Öğle arası, 3. ders çıkışı" required></div>
+<div class="form-group"><label>Nick / Rumuz (Opsiyonel)</label><input type="text" name="nick" placeholder="Boş bırakırsan Anonim görünür"></div>
+</div>
+<div class="form-group"><label>Açıklama / Bağlam (Opsiyonel)</label><input type="text" name="aciklama" placeholder="Olay neyin üzerine konuşulurken geçti?"></div>
+<input type="hidden" name="_subject" value="Yeni MKAL Overheard Duyumu!">
+<input type="hidden" name="_captcha" value="false">
+<button type="submit" class="submit-btn">OVERHEARD GÖNDER 🚀</button>
+</form>
+</div>
+</div>
+<div id="tab-nedir" class="tab-section">
+<div class="box-panel">
+<h2>❓ Overheard Nedir?</h2>
+<p><strong>Overheard</strong> (Türkçesiyle <em>"Kulak Misafiri Oldum"</em>); okul bahçesinde, kantinde, koridorda veya derste çevrendeki insanların konuştuğu komik, garip ve bağlamdan kopuk cümlelere kulak misafiri olup bunları anonim şekilde paylaşma konseptidir.</p>
+<h3 style="color:var(--accent);font-size:1.1rem;margin-top:18px">📌 Paylaşım Kuralları</h3>
+<ul style="padding-left:20px">
+<li><strong>İsim Verilmez:</strong> Öğrenci veya öğretmen ismi, sınıf/numara gibi kişiyi hedef gösteren bilgiler yayınlanmaz.</li>
+<li><strong>Saygı Sınırı:</strong> Hakaret, küfür, zorbalık veya özel hayatın gizliliğini ihlal eden gönderiler onaylanmaz.</li>
+<li><strong>Tamamen Anonim:</strong> İstersen rumuz (nick) yazabilir, istersen <em>Anonim</em> olarak gönderebilirsin.</li>
+</ul>
+</div>
+</div>
+</div>
+</body>
+</html>
