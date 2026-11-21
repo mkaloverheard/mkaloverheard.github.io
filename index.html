@@ -97,52 +97,65 @@ dialog input,dialog textarea{width:100%;background:var(--bg);border:1px solid va
   <div id="vBody"></div>
 </dialog>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-const EMAIL='fwiboii@gmail.com';
-const KEY='mkal-overheard-v1';
-let posts=[],st={},liked=[];
-try{st=JSON.parse(localStorage.getItem(KEY))||{};liked=JSON.parse(localStorage.getItem(KEY+'-liked'))||[]}catch(e){}
-const S=id=>st[id]||(st[id]={views:0,likes:0,comments:[]});
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st));localStorage.setItem(KEY+'-liked',JSON.stringify(liked))}catch(e){}};
+const sb=supabase.createClient('https://pdjuzmhmutpigwbmxtxj.supabase.co','sb_publishable_zo0gWJLsSNZW9keJUgQ15Q_rJNFh0lE');
+let posts=[],liked=[],failed=false,loaded=false;
+try{liked=JSON.parse(localStorage.getItem('mkal-liked'))||[]}catch(e){}
+const saveL=()=>{try{localStorage.setItem('mkal-liked',JSON.stringify(liked))}catch(e){}};
 const $=s=>document.querySelector(s);
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const ts=p=>new Date(p.date).getTime()||0;
-const where=p=>esc([p.place,p.time,p.people].filter(Boolean).join(', '));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ts=p=>new Date(p.created_at).getTime();
+const cc=p=>(p.comments&&p.comments[0]&&p.comments[0].count)||0;
+const where=p=>esc([p.place,p.time_text,p.people].filter(Boolean).join(', '));
 function ago(t){const ms=Date.now()-t,d=Math.floor(ms/864e5);if(d<1){const h=Math.floor(ms/36e5);return h<1?'az önce':h+' saat önce'}return d+' gün önce'}
 
+async function load(){
+  const {data,error}=await sb.from('posts').select('*, comments(count)').eq('status','approved').order('created_at',{ascending:false}).limit(500);
+  if(error)failed=true;else posts=data;
+  loaded=true;render();
+}
 function render(){
   const g=$('#grid'),term=$('#q').value.toLowerCase(),s=$('#sort').value;
   g.className=$('#layout').value==='auto'?'':$('#layout').value;
   let list=posts.filter(p=>(p.text+(p.place||'')).toLowerCase().includes(term));
-  list.sort((a,b)=>s==='old'?ts(a)-ts(b):s==='views'?S(b.id).views-S(a.id).views:s==='likes'?S(b.id).likes-S(a.id).likes:ts(b)-ts(a));
-  g.innerHTML=list.length?list.map((p,i)=>{const v=S(p.id);return `
+  list.sort((a,b)=>s==='old'?ts(a)-ts(b):s==='views'?b.views-a.views:s==='likes'?b.likes-a.likes:ts(b)-ts(a));
+  if(!loaded){g.innerHTML='<p class="empty">Yükleniyor…</p>';return}
+  if(failed){g.innerHTML='<p class="empty">Duyumlar yüklenemedi. Sayfayı yenileyip tekrar dene.</p>';return}
+  g.innerHTML=list.length?list.map((p,i)=>`
    <article class="card ${i%2?'b':'a'}" data-id="${p.id}" tabindex="0">
-     <div class="meta"><span>👁 ${v.views}</span><span>${ago(ts(p))}</span></div>
+     <div class="meta"><span>👁 ${p.views}</span><span>${ago(ts(p))}</span></div>
      <div><div class="q">${esc(p.text)}</div><div class="where">${where(p)}</div></div>
-     <div class="foot"><span class="pill">💬 ${v.comments.length}</span><button class="pill ${liked.includes(p.id)?'on':''}" data-like="${p.id}">♥ ${v.likes}</button></div>
-   </article>`}).join(''):`<p class="empty">${posts.length?'Eşleşen duyum yok.':'Henüz duyum yok. İlk duyumu sen gönder.'}</p>`;
+     <div class="foot"><span class="pill">💬 ${cc(p)}</span><button class="pill ${liked.includes(String(p.id))?'on':''}" data-like="${p.id}">♥ ${p.likes}</button></div>
+   </article>`).join(''):`<p class="empty">${posts.length?'Eşleşen duyum yok.':'Henüz duyum yok. İlk duyumu sen gönder.'}</p>`;
 }
-function openPost(id){
-  const p=posts.find(x=>x.id==id);if(!p)return;const v=S(p.id);
-  v.views++;save();render();
+async function openPost(id,keepViews){
+  const p=posts.find(x=>x.id==id);if(!p)return;
+  if(!keepViews){p.views++;sb.rpc('add_view',{pid:p.id});render()}
+  const {data}=await sb.from('comments').select('*').eq('post_id',p.id).order('created_at');
+  const cs=data||[];p.comments=[{count:cs.length}];
   $('#vBody').innerHTML=`
-   <div class="meta"><span>Anonim · ${ago(ts(p))} · 👁 ${v.views}</span></div>
+   <div class="meta"><span>Anonim · ${ago(ts(p))} · 👁 ${p.views}</span></div>
    <div class="q" style="font-size:24px;margin:16px 0 4px">${esc(p.text)}</div>
    <div class="where">${where(p)}</div>
-   <h3 style="margin:20px 0 0">Yorumlar (${v.comments.length})</h3>
-   ${v.comments.map(c=>`<div class="cm"><b>${esc(c.nick)}</b> ${esc(c.text)}</div>`).join('')||'<p class="empty" style="padding:16px 0">Henüz yorum yok. İlk sen yaz.</p>'}
-   <div class="row" style="margin-top:12px"><input id="cNick" placeholder="Nick" style="max-width:130px"><input id="cText" placeholder="Yorum yaz…" maxlength="200"></div>
+   <h3 style="margin:20px 0 0">Yorumlar (${cs.length})</h3>
+   ${cs.map(c=>`<div class="cm"><b>${esc(c.nick||'Anonim')}</b> ${esc(c.text)}</div>`).join('')||'<p class="empty" style="padding:16px 0">Henüz yorum yok. İlk sen yaz.</p>'}
+   <div class="row" style="margin-top:12px"><input id="cNick" placeholder="Nick" maxlength="30" style="max-width:130px"><input id="cText" placeholder="Yorum yaz…" maxlength="200"></div>
    <button class="go" data-comment="${p.id}">Yorumu gönder</button>`;
   if(!$('#view').open)$('#view').showModal();
+  render();
 }
-document.addEventListener('click',e=>{
+document.addEventListener('click',async e=>{
   const t=e.target;
   if(t.dataset.close!==undefined)t.closest('dialog').close();
-  else if(t.dataset.like){const id=t.dataset.like,v=S(id);
-    if(liked.includes(id)){liked=liked.filter(x=>x!==id);v.likes--}else{liked.push(id);v.likes++}
-    save();render();e.stopPropagation()}
-  else if(t.dataset.comment){const id=t.dataset.comment,v=S(id),txt=$('#cText').value.trim();
-    if(!txt)return;v.comments.push({nick:$('#cNick').value.trim()||'Anonim',text:txt});v.views--;save();openPost(id)}
+  else if(t.dataset.like){const id=String(t.dataset.like),p=posts.find(x=>x.id==id),on=liked.includes(id);
+    if(on){liked=liked.filter(x=>x!==id);p.likes=Math.max(p.likes-1,0)}else{liked.push(id);p.likes++}
+    saveL();render();sb.rpc('add_like',{pid:p.id,d:on?-1:1});e.stopPropagation()}
+  else if(t.dataset.comment){const txt=$('#cText').value.trim();if(!txt)return;
+    t.disabled=true;
+    const {error}=await sb.from('comments').insert({post_id:+t.dataset.comment,nick:$('#cNick').value.trim()||null,text:txt});
+    if(error){t.disabled=false;t.textContent='Gönderilemedi, tekrar dene';return}
+    openPost(t.dataset.comment,true)}
   else{const c=t.closest('.card');if(c)openPost(c.dataset.id)}
 });
 $('#grid').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('card'))openPost(e.target.dataset.id)});
@@ -153,18 +166,13 @@ $('#send').onclick=async()=>{
   const text=$('#aText').value.trim(),n=$('#addNote'),b=$('#send');
   if(!text){n.textContent='Duyum alanı boş olamaz.';return}
   b.disabled=true;n.textContent='Gönderiliyor…';
-  try{
-    const r=await fetch('https://formsubmit.co/ajax/'+EMAIL,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
-      body:JSON.stringify({_subject:'Yeni Overheard',_captcha:'false',Duyum:text,Yer:$('#aPlace').value.trim(),Zaman:$('#aTime').value.trim(),'Kişi sayısı':$('#aPeople').value.trim()})});
-    if(!r.ok)throw 0;
-    ['aText','aPlace','aTime','aPeople'].forEach(i=>$('#'+i).value='');$('#cnt').textContent='0 / 200';
-    n.textContent='Gönderildi. Onaylandıktan sonra yayınlanır.';
-  }catch(e){n.textContent='Gönderilemedi. İnternet bağlantını kontrol edip tekrar dene.'}
+  const {error}=await sb.from('posts').insert({text,place:$('#aPlace').value.trim()||null,time_text:$('#aTime').value.trim()||null,people:$('#aPeople').value.trim()||null});
+  if(error)n.textContent='Gönderilemedi. İnternet bağlantını kontrol edip tekrar dene.';
+  else{['aText','aPlace','aTime','aPeople'].forEach(i=>$('#'+i).value='');$('#cnt').textContent='0 / 200';n.textContent='Gönderildi. Onaylandıktan sonra yayınlanır.'}
   b.disabled=false;
 };
 ['q','layout','sort'].forEach(i=>$('#'+i).addEventListener('input',render));
-fetch('posts.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{posts=Array.isArray(d)?d:[];render()}).catch(render);
-render();
+render();load();
 </script>
 </body>
 </html>
