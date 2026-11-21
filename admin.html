@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>MKAL Overheard – Yönetim</title>
+<style>
+:root{--bg:#041745;--panel:#062970;--ink:#f3efe6;--mute:#a9bbe3;--line:#2a4fa3;--pop:#ff8a4c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,sans-serif}
+button,input{font:inherit;color:inherit}button{cursor:pointer}
+:focus-visible{outline:2px solid var(--pop);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:20px}
+h1{font-size:24px;margin:0 0 16px}
+input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px}
+.btn{background:var(--pop);color:#1b0d05;border:0;border-radius:8px;padding:10px 16px;font-weight:600}
+.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+.bar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.bar .sp{flex:1}
+.tab.on{background:var(--panel);border-color:var(--pop)}
+.item{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:12px}
+.item p{white-space:pre-wrap;font-size:18px;margin:0 0 8px}
+.m{color:var(--mute);font-size:14px;margin-bottom:10px}
+.acts{display:flex;gap:8px}
+.danger{background:#b3261e;color:#fff}
+#msg{color:#ffb4a8;min-height:20px}
+.empty{color:var(--mute);text-align:center;padding:40px 0}
+</style></head><body>
+<div class="wrap">
+<h1>MKAL Overheard – Yönetim</h1>
+<form id="login" hidden>
+  <input id="em" type="email" placeholder="E-posta" autocomplete="username" required>
+  <input id="pw" type="password" placeholder="Şifre" autocomplete="current-password" required>
+  <button class="btn">Giriş yap</button>
+</form>
+<div id="panel" hidden>
+  <div class="bar">
+    <button class="btn ghost tab on" data-s="pending">Bekleyenler (<span id="n1">0</span>)</button>
+    <button class="btn ghost tab" data-s="approved">Yayında (<span id="n2">0</span>)</button>
+    <span class="sp"></span>
+    <button class="btn ghost" id="out">Çıkış</button>
+  </div>
+  <div id="list"></div>
+</div>
+<p id="msg" role="alert"></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const sb=supabase.createClient('https://pdjuzmhmutpigwbmxtxj.supabase.co','sb_publishable_zo0gWJLsSNZW9keJUgQ15Q_rJNFh0lE');
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let all=[],tab='pending';
+const msg=t=>$('#msg').textContent=t||'';
+async function start(){
+  const {data:{session}}=await sb.auth.getSession();
+  $('#login').hidden=!!session;$('#panel').hidden=!session;
+  if(session)refresh();
+}
+$('#login').onsubmit=async e=>{
+  e.preventDefault();msg();
+  const {error}=await sb.auth.signInWithPassword({email:$('#em').value.trim(),password:$('#pw').value});
+  if(error)msg('Giriş başarısız. E-posta veya şifreyi kontrol et.');else start();
+};
+$('#out').onclick=async()=>{await sb.auth.signOut();start()};
+async function refresh(){
+  const {data,error}=await sb.from('posts').select('*').order('created_at',{ascending:false}).limit(300);
+  if(error){msg('Liste alınamadı: '+error.message);return}
+  all=data;draw();
+}
+function draw(){
+  $('#n1').textContent=all.filter(p=>p.status==='pending').length;
+  $('#n2').textContent=all.filter(p=>p.status==='approved').length;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.s===tab));
+  const l=all.filter(p=>p.status===tab);
+  $('#list').innerHTML=l.length?l.map(p=>`
+   <div class="item">
+     <p>${esc(p.text)}</p>
+     <div class="m">${esc([p.place,p.time_text,p.people].filter(Boolean).join(', '))||'Ek bilgi yok'} · ${new Date(p.created_at).toLocaleString('tr-TR')}</div>
+     <div class="acts">
+       ${tab==='pending'?`<button class="btn" data-ok="${p.id}">Onayla</button>`:''}
+       <button class="btn danger" data-del="${p.id}">${tab==='pending'?'Reddet':'Yayından kaldır ve sil'}</button>
+     </div></div>`).join(''):'<p class="empty">Burada gösterilecek duyum yok.</p>';
+}
+document.addEventListener('click',async e=>{
+  const t=e.target;msg();
+  if(t.classList.contains('tab')){tab=t.dataset.s;draw()}
+  else if(t.dataset.ok){
+    const {data,error}=await sb.from('posts').update({status:'approved'}).eq('id',t.dataset.ok).select();
+    if(error||!data.length)msg('Onaylanamadı. Yönetici hesabıyla giriş yaptığından emin ol.');else refresh();
+  }else if(t.dataset.del){
+    if(!confirm('Bu duyum kalıcı olarak silinecek. Emin misin?'))return;
+    const {data,error}=await sb.from('posts').delete().eq('id',t.dataset.del).select();
+    if(error||!data.length)msg('Silinemedi. Yönetici hesabıyla giriş yaptığından emin ol.');else refresh();
+  }
+});
+start();
+</script></body></html>
