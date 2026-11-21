@@ -52,13 +52,14 @@ dialog input,dialog textarea{width:100%;background:var(--bg);border:1px solid va
 .note{font-size:13px;color:var(--mute);text-align:center;margin:10px 0 0}
 .empty{color:var(--mute);padding:40px 0;text-align:center}
 @media(prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translateY(-3px)}}
+dialog select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
 </style>
 </head>
 <body>
 <header>
   <button class="ib" id="aboutBtn" aria-label="Hakkında">?</button>
   <h1>MKAL Overheard<small>Bütün MKAL burada konuşuyor.</small></h1>
-  <span style="width:40px"></span>
+  <button class="ib" id="fbBtn" aria-label="Hata veya öneri bildir" title="Hata / öneri bildir">🐞</button>
 </header>
 <div class="tools">
   <input id="q" type="search" placeholder="Duyum ara…" aria-label="Ara">
@@ -90,6 +91,19 @@ dialog input,dialog textarea{width:100%;background:var(--bg);border:1px solid va
   <label>Kişi sayısı</label><input id="aPeople" placeholder="1 Kız 1 Erkek">
   <button class="go" id="send">Gönder</button>
   <p class="note" id="addNote">Onaylandıktan sonra yayınlanır.</p>
+</dialog>
+
+<dialog id="fb">
+  <button class="x" data-close aria-label="Kapat">×</button>
+  <h2>Hata / öneri bildir</h2>
+  <label>Tür</label>
+  <select id="fbKind"><option value="bug">Hata bildir</option><option value="idea">Öneri</option></select>
+  <label>Mesajın</label>
+  <textarea id="fbText" rows="5" maxlength="1000" placeholder="Yaşadığın sorunu veya önerini yaz…"></textarea>
+  <label>E-posta (opsiyonel)</label>
+  <input id="fbContact" type="email" maxlength="100" placeholder="Dönüş yapmamızı istersen yaz">
+  <button class="go" id="fbSend">Gönder</button>
+  <p class="note" id="fbNote"></p>
 </dialog>
 
 <dialog id="view">
@@ -172,6 +186,16 @@ $('#send').onclick=async()=>{
   b.disabled=false;
 };
 ['q','layout','sort'].forEach(i=>$('#'+i).addEventListener('input',render));
+$('#fbBtn').onclick=()=>{$('#fbNote').textContent='';$('#fb').showModal()};
+$('#fbSend').onclick=async()=>{
+  const m=$('#fbText').value.trim(),n=$('#fbNote'),b=$('#fbSend');
+  if(!m){n.textContent='Lütfen bir mesaj yaz.';return}
+  b.disabled=true;n.textContent='Gönderiliyor…';
+  const {error}=await sb.from('feedback').insert({kind:$('#fbKind').value,message:m,contact:$('#fbContact').value.trim()||null});
+  if(error)n.textContent='Gönderilemedi. Tekrar dene.';
+  else{$('#fbText').value='';$('#fbContact').value='';n.textContent='Teşekkürler, mesajın bize ulaştı.'}
+  b.disabled=false;
+};
 render();load();
 </script>
 </body>
