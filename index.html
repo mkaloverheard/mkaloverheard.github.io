@@ -1,141 +1,170 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MKAL Overheard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f0f3f8;--card:#fff;--text:#1a1f2c;--muted:#64748b;--accent:#062970;--hover:#041c4d;--light:#e6ecf8;--border:#dce3f0}
+:root{--bg:#041745;--panel:#062970;--ink:#f3efe6;--mute:#a9bbe3;--line:#2a4fa3;--pop:#ff8a4c;--paper:#f3efe6;--paperink:#062970}
 *{box-sizing:border-box}
-body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);margin:0;line-height:1.5}
-header{background:var(--accent);color:#fff;padding:24px 16px;text-align:center}
-header h1{margin:0;font-size:1.8rem;font-weight:800}
-header p{margin:6px 0 0;font-size:.95rem;color:#cbd7f0}
-.nav-bar{background:var(--card);border-bottom:1px solid var(--border);display:flex;justify-content:center;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:50}
-.nav-btn{background:none;border:none;padding:14px 16px;font-size:.95rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent}
-.nav-btn.active,.nav-btn:hover{color:var(--accent)}
-.nav-btn.active{border-bottom-color:var(--accent)}
-.container{max-width:900px;margin:24px auto;padding:0 16px}
-.tab-section{display:none}
-.tab-section.active{display:block}
-.controls-bar{background:var(--card);padding:12px 16px;border-radius:10px;border:1px solid var(--border);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:18px}
-.chip-btn{background:var(--bg);border:1px solid var(--border);padding:6px 12px;border-radius:6px;font-size:.85rem;font-weight:600;cursor:pointer}
-.chip-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-select{padding:6px 10px;border-radius:6px;border:1px solid var(--border);font-size:.85rem}
-.feed-grid{display:grid;gap:16px;grid-template-columns:1fr}
-.feed-grid.double{grid-template-columns:repeat(auto-fill,minmax(380px,1fr))}
-.feed-grid.compact .quote-card{padding:14px}
-.feed-grid.compact .quote-note{display:none}
-.quote-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:10px;padding:18px}
-.card-top{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted);margin-bottom:10px}
-.badge-loc{background:var(--light);color:var(--accent);padding:3px 10px;border-radius:20px;font-weight:700}
-.quote-text{font-size:1.05rem;font-weight:500;margin:0 0 10px}
-.quote-note{font-size:.88rem;color:var(--muted);background:#f8fafc;padding:8px 12px;border-radius:6px;margin-bottom:12px}
-.card-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1f5f9;padding-top:10px;font-size:.85rem;color:var(--muted)}
-.like-btn{background:none;border:1px solid var(--border);padding:4px 10px;border-radius:20px;cursor:pointer;font-size:.85rem}
-.like-btn.liked{background:#fee2e2;border-color:#ef4444;color:#dc2626}
-.box-panel{background:var(--card);padding:24px;border-radius:12px;border:1px solid var(--border);border-top:4px solid var(--accent);max-width:650px;margin:0 auto}
-.box-panel h2{margin-top:0;color:var(--accent)}
-.form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:.88rem;font-weight:600;margin-bottom:5px}
-input,textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:.95rem;font-family:inherit}
-.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.submit-btn{background:var(--accent);color:#fff;border:none;padding:14px;width:100%;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:8px}
-.submit-btn:hover{background:var(--hover)}
-@media(max-width:600px){.feed-grid.double,.row-2{grid-template-columns:1fr}}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,sans-serif;min-height:100vh}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--pop);outline-offset:2px}
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:clamp(24px,4vw,40px);font-weight:800;letter-spacing:-.02em}
+h1 small{display:block;font-size:13px;font-weight:400;color:var(--mute);letter-spacing:0}
+.ib{background:none;border:1px solid var(--line);border-radius:50%;width:40px;height:40px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;padding:18px 24px}
+.tools input,.tools select{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.tools input{flex:1;min-width:180px}
+main{padding:0 24px 100px;columns:4 260px;column-gap:16px}
+main.l1{columns:1;max-width:560px;margin:0 auto}
+main.l2{columns:2 260px}
+.card{break-inside:avoid;margin:0 0 16px;border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:14px;cursor:pointer;border:1px solid var(--line)}
+.card.a{background:var(--paper);color:var(--paperink)}
+.card.b{background:var(--panel)}
+.meta{display:flex;justify-content:space-between;font-size:13px;opacity:.75}
+.q{font-size:20px;font-weight:600;line-height:1.3;white-space:pre-wrap;margin:6px 0}
+.where{font-style:italic;font-size:13px;opacity:.8}
+.foot{display:flex;justify-content:space-between}
+.pill{border:1px solid currentColor;background:none;border-radius:99px;padding:4px 12px;font-size:14px;opacity:.85}
+.pill.on{background:var(--pop);border-color:var(--pop);color:#1b0d05;opacity:1}
+.compact .q{font-size:16px}
+main.cp{columns:1;max-width:760px;margin:0 auto}
+main.cp .card{flex-direction:row;align-items:center;gap:16px}
+main.cp .q{flex:1;font-size:16px}
+main.cp .foot,main.cp .meta{flex-direction:column;gap:6px}
+.fab{position:fixed;right:24px;bottom:24px;width:60px;height:60px;border-radius:50%;border:0;background:var(--pop);color:#1b0d05;font-size:32px;box-shadow:0 6px 20px #0008}
+dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:24px;width:min(560px,92vw)}
+dialog::backdrop{background:#000a}
+dialog h2{margin:0 0 14px}
+label{display:block;font-size:14px;color:var(--mute);margin:12px 0 4px}
+dialog input,dialog textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+.row{display:flex;gap:12px}.row>div{flex:1}
+.go{margin-top:16px;width:100%;background:var(--pop);color:#1b0d05;border:0;border-radius:8px;padding:12px;font-weight:600}
+.x{float:right;background:none;border:0;font-size:22px}
+.cm{border-top:1px solid var(--line);padding:10px 0;font-size:15px}
+.cm b{color:var(--pop)}
+.note{font-size:13px;color:var(--mute);text-align:center;margin:10px 0 0}
+.empty{color:var(--mute);padding:40px 0;text-align:center}
+@media(prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translateY(-3px)}}
 </style>
-<script>
-function sekmeAc(id,btn){
-document.querySelectorAll(".tab-section").forEach(s=>{s.style.display="none";s.classList.remove("active")});
-document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
-var s=document.getElementById(id);s.style.display="block";s.classList.add("active");btn.classList.add("active");
-}
-function gorunumDegistir(mod,chip){
-var g=document.getElementById("feedGrid");g.className="feed-grid"+(mod!=="single"?" "+mod:"");
-document.querySelectorAll(".chip-btn").forEach(c=>c.classList.remove("active"));chip.classList.add("active");
-}
-function begeniDegistir(btn){
-var sp=btn.querySelector("span"),n=parseInt(sp.innerText);btn.classList.toggle("liked");sp.innerText=btn.classList.contains("liked")?n+1:n-1;
-}
-function kartlariSirala(){
-var g=document.getElementById("feedGrid"),k=Array.from(g.children),m=document.getElementById("sortSelect").value;
-k.sort((a,b)=>m==="likes"?b.dataset.likes-a.dataset.likes:m==="oldest"?a.dataset.date.localeCompare(b.dataset.date):b.dataset.date.localeCompare(a.dataset.date));
-k.forEach(x=>g.appendChild(x));
-}
-</script>
 </head>
 <body>
 <header>
-<h1>MKAL OVERHEARD</h1>
-<p>Okulda kulak misafiri olduğumuz komik, garip ve bağlamdan kopuk anlar</p>
+  <button class="ib" id="aboutBtn" aria-label="Hakkında">?</button>
+  <h1>MKAL Overheard<small>Bütün MKAL burada konuşuyor.</small></h1>
+  <span style="width:40px"></span>
 </header>
-<nav class="nav-bar">
-<button type="button" class="nav-btn active" onclick="sekmeAc('tab-oku',this)">Overheardler</button>
-<button type="button" class="nav-btn" onclick="sekmeAc('tab-yaz',this)">✍ Kendi Overheardini yaz!</button>
-<button type="button" class="nav-btn" onclick="sekmeAc('tab-nedir',this)">❓ Overheard Nedir?</button>
-</nav>
-<div class="container">
-<div id="tab-oku" class="tab-section active">
-<div class="controls-bar">
-<div>
-<span style="font-size:.85rem;font-weight:600;color:var(--muted)">Görünüm: </span>
-<button type="button" class="chip-btn active" onclick="gorunumDegistir('single',this)">Tekli</button>
-<button type="button" class="chip-btn" onclick="gorunumDegistir('double',this)">İkili</button>
-<button type="button" class="chip-btn" onclick="gorunumDegistir('compact',this)">Kompakt</button>
+<div class="tools">
+  <input id="q" type="search" placeholder="Duyum ara…" aria-label="Ara">
+  <select id="layout" aria-label="Görünüm">
+    <option value="auto">Otomatik</option><option value="l1">Tekli</option><option value="l2">İkili</option><option value="cp">Kompakt</option>
+  </select>
+  <select id="sort" aria-label="Sırala">
+    <option value="new">En yeni</option><option value="old">En eski</option><option value="views">Görüntülenme</option><option value="likes">Beğeni</option>
+  </select>
 </div>
-<select id="sortSelect" onchange="kartlariSirala()">
-<option value="newest">En Yeni</option>
-<option value="oldest">En Eski</option>
-<option value="likes">En Çok Beğeni ❤</option>
-</select>
-</div>
-<div id="feedGrid" class="feed-grid">
-<div class="quote-card" data-date="2026-11-19" data-likes="24">
-<div class="card-top"><span class="badge-loc">📍 Kantin • 👥 2 Kişi</span><span>19 Kasım 2026 • Öğle Arası</span></div>
-<p class="quote-text">"Sınavdan 90 bekliyorum dedim ama kağıda sadece adımı doğru yazdığımdan eminim."</p>
-<div class="quote-note">Açıklama: Matematik sınavı çıkışında iki 11. sınıf öğrencisi arasında geçti.</div>
-<div class="card-bottom"><span>👤 Anonim</span><div><span>👁 142 </span><button type="button" class="like-btn" onclick="begeniDegistir(this)">❤ <span>24</span></button></div></div>
-</div>
-<div class="quote-card" data-date="2026-11-18" data-likes="41">
-<div class="card-top"><span class="badge-loc">📍 2. Kat Koridor • 👥 3 Kişi</span><span>18 Kasım 2026 • Teneffüs</span></div>
-<p class="quote-text">— Ders zili çaldı mı?<br>— Ruhum hala teneffüste ama bedenim sınıfa giriyor.</p>
-<div class="card-bottom"><span>👤 UykusuzÖğrenci</span><div><span>👁 215 </span><button type="button" class="like-btn" onclick="begeniDegistir(this)">❤ <span>41</span></button></div></div>
-</div>
-</div>
-</div>
-<div id="tab-yaz" class="tab-section">
-<div class="box-panel">
-<h2>Bugün Neler Duydun?</h2>
-<p style="color:var(--muted);font-size:.92rem;margin-top:-8px">Gönderdiğin duyum yönetici onayından geçtikten sonra ana akışta yayınlanır.</p>
-<form action="https://formsubmit.co/fwiboii@gmail.com" method="POST">
-<div class="form-group"><label>Duyum *</label><textarea name="duyum" rows="4" placeholder="Duyduğun cümleyi veya diyaloğu buraya yaz..." required></textarea></div>
-<div class="row-2">
-<div class="form-group"><label>Konum *</label><input type="text" name="konum" placeholder="Örn: Kantin, Bahçe, Koridor" required></div>
-<div class="form-group"><label>Kişi Sayısı *</label><input type="text" name="kisi_sayisi" placeholder="Örn: 2 kişi, 1 kişi" required></div>
-</div>
-<div class="row-2">
-<div class="form-group"><label>Zaman *</label><input type="text" name="zaman" placeholder="Örn: Öğle arası, 3. ders çıkışı" required></div>
-<div class="form-group"><label>Nick / Rumuz (Opsiyonel)</label><input type="text" name="nick" placeholder="Boş bırakırsan Anonim görünür"></div>
-</div>
-<div class="form-group"><label>Açıklama / Bağlam (Opsiyonel)</label><input type="text" name="aciklama" placeholder="Olay neyin üzerine konuşulurken geçti?"></div>
-<input type="hidden" name="_subject" value="Yeni MKAL Overheard Duyumu!">
-<input type="hidden" name="_captcha" value="false">
-<button type="submit" class="submit-btn">OVERHEARD GÖNDER 🚀</button>
-</form>
-</div>
-</div>
-<div id="tab-nedir" class="tab-section">
-<div class="box-panel">
-<h2>❓ Overheard Nedir?</h2>
-<p><strong>Overheard</strong> (Türkçesiyle <em>"Kulak Misafiri Oldum"</em>); okul bahçesinde, kantinde, koridorda veya derste çevrendeki insanların konuştuğu komik, garip ve bağlamdan kopuk cümlelere kulak misafiri olup bunları anonim şekilde paylaşma konseptidir.</p>
-<h3 style="color:var(--accent);font-size:1.1rem;margin-top:18px">📌 Paylaşım Kuralları</h3>
-<ul style="padding-left:20px">
-<li><strong>İsim Verilmez:</strong> Öğrenci veya öğretmen ismi, sınıf/numara gibi kişiyi hedef gösteren bilgiler yayınlanmaz.</li>
-<li><strong>Saygı Sınırı:</strong> Hakaret, küfür, zorbalık veya özel hayatın gizliliğini ihlal eden gönderiler onaylanmaz.</li>
-<li><strong>Tamamen Anonim:</strong> İstersen rumuz (nick) yazabilir, istersen <em>Anonim</em> olarak gönderebilirsin.</li>
-</ul>
-</div>
-</div>
-</div>
+<main id="grid"></main>
+<button class="fab" id="addBtn" aria-label="Duyum ekle">+</button>
+
+<dialog id="about">
+  <button class="x" data-close aria-label="Kapat">×</button>
+  <h2>Overheard nedir?</h2>
+  <p>Overheard, kantinde, bahçede veya çardakta duyduğunuz ilgi çekici komik ve absürt olayların anonim bir şekilde paylaşılmasıdır.</p>
+</dialog>
+
+<dialog id="add">
+  <button class="x" data-close aria-label="Kapat">×</button>
+  <h2>Bugün neler duydun?</h2>
+  <label>Duyum <span id="cnt" style="float:right">0 / 200</span></label>
+  <textarea id="aText" rows="4" maxlength="200" placeholder="Duyduğun cümleyi yaz…"></textarea>
+  <div class="row">
+    <div><label>Yer</label><input id="aPlace" placeholder="Çardak"></div>
+    <div><label>Zaman</label><input id="aTime" placeholder="Öğle Arası, 3. Ders"></div>
+  </div>
+  <label>Kişi sayısı</label><input id="aPeople" placeholder="1 Kız 1 Erkek">
+  <button class="go" id="send">Gönder</button>
+  <p class="note" id="addNote">Onaylandıktan sonra yayınlanır.</p>
+</dialog>
+
+<dialog id="view">
+  <button class="x" data-close aria-label="Kapat">×</button>
+  <div id="vBody"></div>
+</dialog>
+
+<script>
+const EMAIL='fwiboii@gmail.com';
+const KEY='mkal-overheard-v1';
+let posts=[],st={},liked=[];
+try{st=JSON.parse(localStorage.getItem(KEY))||{};liked=JSON.parse(localStorage.getItem(KEY+'-liked'))||[]}catch(e){}
+const S=id=>st[id]||(st[id]={views:0,likes:0,comments:[]});
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st));localStorage.setItem(KEY+'-liked',JSON.stringify(liked))}catch(e){}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ts=p=>new Date(p.date).getTime()||0;
+const where=p=>esc([p.place,p.time,p.people].filter(Boolean).join(', '));
+function ago(t){const ms=Date.now()-t,d=Math.floor(ms/864e5);if(d<1){const h=Math.floor(ms/36e5);return h<1?'az önce':h+' saat önce'}return d+' gün önce'}
+
+function render(){
+  const g=$('#grid'),term=$('#q').value.toLowerCase(),s=$('#sort').value;
+  g.className=$('#layout').value==='auto'?'':$('#layout').value;
+  let list=posts.filter(p=>(p.text+(p.place||'')).toLowerCase().includes(term));
+  list.sort((a,b)=>s==='old'?ts(a)-ts(b):s==='views'?S(b.id).views-S(a.id).views:s==='likes'?S(b.id).likes-S(a.id).likes:ts(b)-ts(a));
+  g.innerHTML=list.length?list.map((p,i)=>{const v=S(p.id);return `
+   <article class="card ${i%2?'b':'a'}" data-id="${p.id}" tabindex="0">
+     <div class="meta"><span>👁 ${v.views}</span><span>${ago(ts(p))}</span></div>
+     <div><div class="q">${esc(p.text)}</div><div class="where">${where(p)}</div></div>
+     <div class="foot"><span class="pill">💬 ${v.comments.length}</span><button class="pill ${liked.includes(p.id)?'on':''}" data-like="${p.id}">♥ ${v.likes}</button></div>
+   </article>`}).join(''):`<p class="empty">${posts.length?'Eşleşen duyum yok.':'Henüz duyum yok. İlk duyumu sen gönder.'}</p>`;
+}
+function openPost(id){
+  const p=posts.find(x=>x.id==id);if(!p)return;const v=S(p.id);
+  v.views++;save();render();
+  $('#vBody').innerHTML=`
+   <div class="meta"><span>Anonim · ${ago(ts(p))} · 👁 ${v.views}</span></div>
+   <div class="q" style="font-size:24px;margin:16px 0 4px">${esc(p.text)}</div>
+   <div class="where">${where(p)}</div>
+   <h3 style="margin:20px 0 0">Yorumlar (${v.comments.length})</h3>
+   ${v.comments.map(c=>`<div class="cm"><b>${esc(c.nick)}</b> ${esc(c.text)}</div>`).join('')||'<p class="empty" style="padding:16px 0">Henüz yorum yok. İlk sen yaz.</p>'}
+   <div class="row" style="margin-top:12px"><input id="cNick" placeholder="Nick" style="max-width:130px"><input id="cText" placeholder="Yorum yaz…" maxlength="200"></div>
+   <button class="go" data-comment="${p.id}">Yorumu gönder</button>`;
+  if(!$('#view').open)$('#view').showModal();
+}
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.dataset.close!==undefined)t.closest('dialog').close();
+  else if(t.dataset.like){const id=t.dataset.like,v=S(id);
+    if(liked.includes(id)){liked=liked.filter(x=>x!==id);v.likes--}else{liked.push(id);v.likes++}
+    save();render();e.stopPropagation()}
+  else if(t.dataset.comment){const id=t.dataset.comment,v=S(id),txt=$('#cText').value.trim();
+    if(!txt)return;v.comments.push({nick:$('#cNick').value.trim()||'Anonim',text:txt});v.views--;save();openPost(id)}
+  else{const c=t.closest('.card');if(c)openPost(c.dataset.id)}
+});
+$('#grid').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('card'))openPost(e.target.dataset.id)});
+$('#aboutBtn').onclick=()=>$('#about').showModal();
+$('#addBtn').onclick=()=>{$('#addNote').textContent='Onaylandıktan sonra yayınlanır.';$('#add').showModal()};
+$('#aText').oninput=e=>$('#cnt').textContent=e.target.value.length+' / 200';
+$('#send').onclick=async()=>{
+  const text=$('#aText').value.trim(),n=$('#addNote'),b=$('#send');
+  if(!text){n.textContent='Duyum alanı boş olamaz.';return}
+  b.disabled=true;n.textContent='Gönderiliyor…';
+  try{
+    const r=await fetch('https://formsubmit.co/ajax/'+EMAIL,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
+      body:JSON.stringify({_subject:'Yeni Overheard',_captcha:'false',Duyum:text,Yer:$('#aPlace').value.trim(),Zaman:$('#aTime').value.trim(),'Kişi sayısı':$('#aPeople').value.trim()})});
+    if(!r.ok)throw 0;
+    ['aText','aPlace','aTime','aPeople'].forEach(i=>$('#'+i).value='');$('#cnt').textContent='0 / 200';
+    n.textContent='Gönderildi. Onaylandıktan sonra yayınlanır.';
+  }catch(e){n.textContent='Gönderilemedi. İnternet bağlantını kontrol edip tekrar dene.'}
+  b.disabled=false;
+};
+['q','layout','sort'].forEach(i=>$('#'+i).addEventListener('input',render));
+fetch('posts.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{posts=Array.isArray(d)?d:[];render()}).catch(render);
+render();
+</script>
 </body>
 </html>
