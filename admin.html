@@ -35,6 +35,7 @@ input{width:100%;background:var(--panel);border:1px solid var(--line);border-rad
   <div class="bar">
     <button class="btn ghost tab on" data-s="pending">Bekleyenler (<span id="n1">0</span>)</button>
     <button class="btn ghost tab" data-s="approved">Yayında (<span id="n2">0</span>)</button>
+    <button class="btn ghost tab" data-s="feedback">Geri bildirimler (<span id="n3">0</span>)</button>
     <span class="sp"></span>
     <button class="btn ghost" id="out">Çıkış</button>
   </div>
@@ -47,7 +48,7 @@ input{width:100%;background:var(--panel);border:1px solid var(--line);border-rad
 const sb=supabase.createClient('https://pdjuzmhmutpigwbmxtxj.supabase.co','sb_publishable_zo0gWJLsSNZW9keJUgQ15Q_rJNFh0lE');
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let all=[],tab='pending';
+let all=[],fb=[],tab='pending';
 const msg=t=>$('#msg').textContent=t||'';
 async function start(){
   const {data:{session}}=await sb.auth.getSession();
@@ -63,12 +64,27 @@ $('#out').onclick=async()=>{await sb.auth.signOut();start()};
 async function refresh(){
   const {data,error}=await sb.from('posts').select('*').order('created_at',{ascending:false}).limit(300);
   if(error){msg('Liste alınamadı: '+error.message);return}
-  all=data;draw();
+  all=data;
+  const f=await sb.from('feedback').select('*').order('created_at',{ascending:false}).limit(300);
+  fb=f.data||[];draw();
 }
 function draw(){
   $('#n1').textContent=all.filter(p=>p.status==='pending').length;
   $('#n2').textContent=all.filter(p=>p.status==='approved').length;
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.s===tab));
+  $('#n3').textContent=fb.filter(f=>!f.is_read).length;
+  if(tab==='feedback'){
+    $('#list').innerHTML=fb.length?fb.map(f=>`
+     <div class="item" style="${f.is_read?'opacity:.6':''}">
+       <div class="m">${f.kind==='bug'?'🐞 Hata':'💡 Öneri'} · ${new Date(f.created_at).toLocaleString('tr-TR')}${f.is_read?' · okundu':''}</div>
+       <p>${esc(f.message)}</p>
+       ${f.contact?`<div class="m">İletişim: ${esc(f.contact)}</div>`:''}
+       <div class="acts">
+         ${f.is_read?'':`<button class="btn" data-fread="${f.id}">Okundu işaretle</button>`}
+         <button class="btn danger" data-fdel="${f.id}">Sil</button>
+       </div></div>`).join(''):'<p class="empty">Henüz geri bildirim yok.</p>';
+    return;
+  }
   const l=all.filter(p=>p.status===tab);
   $('#list').innerHTML=l.length?l.map(p=>`
    <div class="item">
@@ -82,7 +98,14 @@ function draw(){
 document.addEventListener('click',async e=>{
   const t=e.target;msg();
   if(t.classList.contains('tab')){tab=t.dataset.s;draw()}
-  else if(t.dataset.ok){
+  else if(t.dataset.fread){
+    const {data,error}=await sb.from('feedback').update({is_read:true}).eq('id',t.dataset.fread).select();
+    if(error||!data.length)msg('İşlem başarısız.');else refresh();
+  }else if(t.dataset.fdel){
+    if(!confirm('Bu geri bildirim silinecek. Emin misin?'))return;
+    const {data,error}=await sb.from('feedback').delete().eq('id',t.dataset.fdel).select();
+    if(error||!data.length)msg('Silinemedi.');else refresh();
+  }else if(t.dataset.ok){
     const {data,error}=await sb.from('posts').update({status:'approved'}).eq('id',t.dataset.ok).select();
     if(error||!data.length)msg('Onaylanamadı. Yönetici hesabıyla giriş yaptığından emin ol.');else refresh();
   }else if(t.dataset.del){
